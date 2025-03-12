@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ pdf_name }} - PDF QA System</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --accent-color: #4895ef;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --user-bubble-color: #4361ee;
+        --assistant-bubble-color: #ffffff;
+        --border-radius: 10px;
+        --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
+      body {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #f0f2f5;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #333;
+      }
+
+      .main-content {
+        flex: 1;
+        max-width: 1000px;
+      }
+
+      .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        height: calc(100vh - 130px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-header {
+        background-color: var(--primary-color);
+        padding: 1.25rem;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+      }
+
+      .card-header h1 {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      .breadcrumb {
+        background-color: transparent;
+        padding: 0.75rem 0;
+        margin-bottom: 1rem;
+      }
+
+      .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: var(--transition);
+      }
+
+      .breadcrumb-item a:hover {
+        color: var(--secondary-color);
+      }
+
+      .breadcrumb-item.active {
+        color: #6c757d;
+      }
+
+      .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background-color: #f5f7fb;
+        margin-bottom: 0;
+        scroll-behavior: smooth;
+      }
+
+      .chat-message {
+        max-width: 80%;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-radius: 18px;
+        position: relative;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .question {
+        background-color: var(--user-bubble-color);
+        color: white;
+        border-top-right-radius: 4px;
+        margin-left: auto;
+        padding-right: 1.5rem;
+      }
+
+      .answer {
+        background-color: var(--assistant-bubble-color);
+        color: #333;
+        border-top-left-radius: 4px;
+        margin-right: auto;
+        padding-left: 1.5rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .question::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -10px;
+        width: 20px;
+        height: 20px;
+        background-color: var(--user-bubble-color);
+        border-bottom-left-radius: 16px;
+      }
+
+      .answer::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -10px;
+        width: 20px;
+        height: 20px;
+        background-color: var(--assistant-bubble-color);
+        border-bottom-right-radius: 16px;
+      }
+
+      .chat-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: -5px;
+        font-size: 1.2rem;
+      }
+
+      .question .chat-avatar {
+        background-color: #335eea;
+        right: -48px;
+        color: white;
+      }
+
+      .answer .chat-avatar {
+        background-color: #e9eaf6;
+        left: -48px;
+        color: var(--primary-color);
+      }
+
+      .chat-message-content {
+        word-wrap: break-word;
+      }
+
+      .question-form {
+        padding: 1rem;
+        background-color: white;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .input-group {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-radius: 50px;
+        overflow: hidden;
+      }
+
+      #question-input {
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.95rem;
+        border-radius: 50px 0 0 50px;
+      }
+
+      #question-input:focus {
+        box-shadow: none;
+      }
+
+      .btn-send {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 0 50px 50px 0;
+        padding: 0.75rem 1.75rem;
+        transition: var(--transition);
+      }
+
+      .btn-send:hover {
+        background-color: var(--secondary-color);
+      }
+
+      .loading {
+        display: none;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 10px;
+        justify-content: center;
+      }
+
+      .spinner-border {
+        color: var(--primary-color);
+      }
+
+      .loading-text {
+        margin-left: 1rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+      }
+
+      .placeholder-message {
+        text-align: center;
+        color: #9ca3af;
+        padding: 5rem 2rem;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 10px;
+        margin: 2rem auto;
+        max-width: 80%;
+      }
+
+      .placeholder-message i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d5db;
+      }
+
+      .timestamp {
+        font-size: 0.7rem;
+        color: rgba(0, 0, 0, 0.4);
+        margin-top: 8px;
+        text-align: right;
+      }
+
+      .question .timestamp {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      footer {
+        padding: 1rem 0;
+        background-color: white;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      @media (max-width: 768px) {
+        .chat-message {
+          max-width: 90%;
+        }
+
+        .chat-avatar {
+          display: none;
+        }
+
+        .question::before,
+        .answer::before {
+          display: none;
+        }
+
+        .card {
+          height: calc(100vh - 100px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container main-content">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-file-pdf"></i> {{ pdf_name }}
+          </li>
+        </ol>
+      </nav>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div
+              class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+            >
+              <h1 class="h4 mb-0">
+                <i class="fas fa-comments me-2"></i> {{ pdf_name }}
+              </h1>
+            </div>
+            <div class="chat-container" id="chat-container">
+              <div class="placeholder-message" id="placeholder-message">
+                <i class="fas fa-robot d-block"></i>
+                <p class="mb-0">
+                  Ask a question about <strong>{{ pdf_name }}</strong> to start
+                  the conversation
+                </p>
+                <p class="mt-2 mb-0 small">
+                  The AI will search through the document to find the most
+                  relevant answer
+                </p>
+              </div>
+            </div>
+
+            <div class="question-form">
+              <form id="question-form">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="question-input"
+                    placeholder="Ask a question about the document..."
+                    required
+                  />
+                  <button class="btn btn-send" type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </form>
+              <div
+                class="loading mt-3"
+                id="loading-indicator"
+                style="display: none"
+              >
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="loading-text"
+                  >Searching document for answers...</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer mt-auto py-3">
+      <div class="container text-center">
+        <span class="text-muted">PDF Question Answering System</span>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Elements
+        const chatContainer = document.getElementById("chat-container");
+        const questionForm = document.getElementById("question-form");
+        const questionInput = document.getElementById("question-input");
+        const loadingIndicator = document.getElementById("loading-indicator");
+        const placeholderMessage = document.getElementById(
+          "placeholder-message"
+        );
+
+        // PDF ID from the server
+        const pdfId = "{{ pdf_id }}";
+
+        // Focus input when page loads
+        questionInput.focus();
+
+        // Handle form submission
+        questionForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          const question = questionInput.value.trim();
+          if (!question) return;
+
+          // Remove placeholder if it exists
+          if (placeholderMessage) {
+            placeholderMessage.style.display = "none";
+          }
+
+          // Add question to chat
+          addMessageToChat(question, "question");
+
+          // Show loading indicator
+          loadingIndicator.style.display = "flex";
+
+          // Clear input
+          questionInput.value = "";
+
+          // Send question to server
+          fetch("/ask", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              pdf_id: pdfId,
+              question: question,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Hide loading indicator
+              loadingIndicator.style.display = "none";
+
+              if (data.status === "success") {
+                // Add answer to chat
+                addMessageToChat(data.answer, "answer");
+              } else {
+                // Show error
+                addMessageToChat(`Error: ${data.message}`, "answer error");
+              }
+            })
+            .catch((error) => {
+              // Hide loading indicator
+              loadingIndicator.style.display = "none";
+
+              // Show error
+              addMessageToChat(`Error: ${error}`, "answer error");
+            });
+        });
+
+        // Add message to chat
+        function addMessageToChat(text, type) {
+          const messageElement = document.createElement("div");
+          messageElement.className = `chat-message ${type}`;
+
+          // Format the text with proper line breaks
+          const formattedText = text.replace(/\n/g, "<br>");
+
+          // Get current time
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, "0");
+          const minutes = now.getMinutes().toString().padStart(2, "0");
+          const timeString = `${hours}:${minutes}`;
+
+          // Avatar and label based on type
+          const avatar =
+            type === "question"
+              ? '<div class="chat-avatar"><i class="fas fa-user"></i></div>'
+              : '<div class="chat-avatar"><i class="fas fa-robot"></i></div>';
+
+          messageElement.innerHTML = `
+            ${avatar}
+            <div class="chat-message-content">${formattedText}</div>
+            <div class="timestamp">${timeString}</div>
+          `;
+
+          chatContainer.appendChild(messageElement);
+
+          // Scroll to bottom with a slight delay to ensure rendering
+          setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }, 100);
+
+          // Focus input again
+          questionInput.focus();
+        }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
